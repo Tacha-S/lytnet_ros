@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="image" default="/realsense_front/color/image_rect_color" />
+    <arg name="model" default="$(find lytnet_ros)/models/LytNetV1_weights" />
+
+    <node name="traffic_light_recognizer" pkg="lytnet_ros" type="traffic_light_recognizer.py" output="screen" required="true">
+        <param name="model" value="$(arg model)" />
+        <remap from="~image" to="$(arg image)" />
+    </node>
+</launch>
