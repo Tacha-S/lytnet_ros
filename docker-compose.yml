@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  lytnet:
+    image: lytnet
+    build: .
+    container_name: lytnet
+    command: bash -c "source /opt/ros/melodic/setup.bash && cd /ros/src/lytnet_ros && pipenv run bash -c 'source /ros/devel/setup.bash;roslaunch lytnet_ros lytnet.launch'"
+    runtime: nvidia
+    tty: true
+    volumes:
+      - ${PWD}:/ros/src/lytnet_ros
+    network_mode: "host"
