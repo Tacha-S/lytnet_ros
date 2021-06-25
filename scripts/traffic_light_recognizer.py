@@ -4,6 +4,7 @@ import torch
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 import numpy as np
+import cv2
 
 from cv_bridge import CvBridge, CvBridgeError
 import rospkg
@@ -20,6 +21,7 @@ class TrafficLightRecognizer(object):
         ros_pack = rospkg.RosPack()
         package_path = ros_pack.get_path('lytnet_ros')
         model = rospy.get_param('~model', package_path + '/models/LytNetV2_weights')
+        self.image = rospy.get_param('~image_path', package_path + '/images/preview.png')
 
         self.net = LYTNet()
         checkpoint = torch.load(model)
@@ -36,11 +38,12 @@ class TrafficLightRecognizer(object):
         rospy.Subscriber('~image', Image, self.callback, queue_size=1)
 
     def callback(self, msg):
-        try:
-            color_image = self.__cv_bridge.imgmsg_to_cv2(msg, "bgr8")
-        except CvBridgeError as e:
-            rospy.logerr('Converting Image Error. ' + str(e))
-            return
+        # try:
+        #     color_image = self.__cv_bridge.imgmsg_to_cv2(msg, "bgr8")
+        # except CvBridgeError as e:
+        #     rospy.logerr('Converting Image Error. ' + str(e))
+        #     return
+        color_image = cv2.imread(self.image)
 
         input_image = transforms.ToTensor()(color_image)
         input_image = input_image.unsqueeze(0)
@@ -49,6 +52,7 @@ class TrafficLightRecognizer(object):
         pred_classes, pred_direc = self.net(input_image.cuda())
         _, predicted = torch.max(pred_classes, 1)
 
+        rospy.loginfo(pred_classes)
         rospy.loginfo(self.__labels[predicted.cpu().numpy()[0]])
 
 
